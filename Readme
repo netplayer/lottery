@@ -1,1 +1,3 @@
 Put the files in a web server public directory and access the index.html file.
+ball.xcf is the ball gimp file. You can use it to create your own ball images.
+The p5.js library is used to create the animation. You can download it from https://p5js.org/download/ or use the CDN version.
