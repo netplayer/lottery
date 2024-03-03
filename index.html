@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lottery</title>
+  <script src="vendor/js/p5.min.js"></script>
+</head>
+<body>
+  <script>
+    const numBalls = 90;
+    const minRadius = 10;
+    const maxRadius = 30;
+    const minSpeed = 1;
+    const maxSpeed = 8;
+    const colors = [
+      [255, 0, 0],
+      [0, 255, 0],
+      [0, 0, 255],
+      [255, 255, 0],
+      [255, 0, 255],
+      [0, 255, 255],
+    ];
+    let radius;
+    const balls = [];
+
+    function preload() {
+      ballImg = loadImage('images/ball1.png');
+    }
+
+    function setup() {
+      createCanvas(400, 400);
+
+      // Calculate the maximum distance between any two balls
+      const maxDistance = (maxRadius + minRadius) * numBalls;
+
+      // Calculate the diameter of the circle
+      const diameter = maxDistance + maxRadius * 2;
+
+      // Calculate the center of the circle
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // Adjust the radius to fit within the canvas dimensions
+      radius = min(diameter / 2, min(width, height) / 2 - maxRadius);
+
+      // Create the balls
+      for (let i = 0; i < numBalls; i++) {
+        const x = random(centerX - radius + maxRadius, centerX + radius - maxRadius);
+        const y = random(centerY - radius + maxRadius, centerY + radius - maxRadius);
+        const ballRadius = 25;
+        const speed = random(minSpeed, maxSpeed);
+        const color = colors[i % colors.length];
+        const angle = atan2(y - centerY, x - centerX);
+        const vx = cos(angle + HALF_PI) * speed;
+        const vy = sin(angle + HALF_PI) * speed;
+        const number = i + 1;
+        balls.push({ x, y, radius: ballRadius, speed, color, vx, vy, number });
+      }
+    }
+
+    function draw() {
+      background(255);
+
+      // Draw the circle
+      noFill();
+      stroke(0);
+      strokeWeight(2);
+      ellipse(width / 2, height / 2, radius * 2, radius * 2);
+
+      // Move and draw each ball
+      for (let i = 0; i < balls.length; i++) {
+        const ball = balls[i];
+
+        // Move the ball
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // Check if the ball is outside the circle
+        const distanceFromCenter = sqrt((ball.x - width / 2) ** 2 + (ball.y - height / 2) ** 2);
+        if (distanceFromCenter + ball.radius > radius) {
+          // Reflect the velocity vector off the circle's edge
+          const angle = atan2(ball.y - height / 2, ball.x - width / 2);
+          const distanceOverlapping = distanceFromCenter + ball.radius - radius;
+          ball.x -= distanceOverlapping * cos(angle);
+          ball.y -= distanceOverlapping * sin(angle);
+          const normal = createVector(ball.x - width / 2, ball.y - height / 2);
+          const velocity = createVector(ball.vx, ball.vy);
+          const dot = velocity.dot(normal);
+          const reflection = p5.Vector.sub(velocity, p5.Vector.mult(normal, 2 * dot / normal.magSq()));
+          ball.vx = reflection.x;
+          ball.vy = reflection.y;
+        }
+
+        // Draw the ball
+        image(ballImg, ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2);
+
+        // Draw the number on the ball
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(20);
+        text(ball.number, ball.x, ball.y);
+      }
+    }
+  </script>
+</body>
+</html>
